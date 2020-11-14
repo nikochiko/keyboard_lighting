@@ -44,7 +44,7 @@ def register_game():
 
 def register_event():
     r = requests.post(
-        GS_EVENT_ENDPOINT,
+        f"{SRV_ADDRESS}/register_game_event",
         headers={"Content-Type": "application/json"},
         json={"game": GAME_NAME, "event": EVENT_NAME, "value_optional": True},
     )
@@ -72,7 +72,7 @@ def get_box(size, req_size=(22, 6)):
 def yield_rgb_frames(im, req_size=(22, 6)):
     for frame_no in range(0, im.n_frames):
         im.seek(frame_no)
-        im2 = im.resize(req_size, box=get_box(im.size, req_size))
+        im2 = im.resize(req_size, box=get_box(im.size, req_size)).convert("RGB")
         yield [
             im2.getpixel((x, y))
             for x in range(im2.width)
@@ -92,9 +92,9 @@ async def start_sending_heartbeats(interval=14):
 
 
 async def send_gif_frames(
-    gif_source, frame_delay=0.1, req_size=(22, 6), forever=False
+    gif_source, frame_delay=0.2, req_size=(22, 6), forever=False
 ):
-    im = Image.open(gif_source).convert("RGB")
+    im = Image.open(gif_source)
 
     while True:
         for frame in yield_rgb_frames(im, req_size):
