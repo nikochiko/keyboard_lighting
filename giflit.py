@@ -1,4 +1,5 @@
 import asyncio
+import json
 import os
 
 import requests
@@ -22,7 +23,7 @@ def send_to_gs(data):
     r = requests.post(
         GS_EVENT_ENDPOINT,
         headers={"Content-Type": "application/json"},
-        data=data,
+        json=data,
     )
     assert (
         r.status_code == requests.codes.OK
@@ -33,7 +34,7 @@ def register_game():
     r = requests.post(
         f"{SRV_ADDRESS}/game_metadata",
         headers={"Content-Type": "application/json"},
-        data={
+        json={
             "game": GAME_NAME,
             "game_display_name": "gif-lighting for keyboards",
             "developer_name": "nikochiko (github/nikochiko)",
@@ -45,8 +46,8 @@ def register_game():
 def register_event():
     r = requests.post(
         GS_EVENT_ENDPOINT,
-        headers={"Content-Type": "application/json"},
-        data={"game": GAME_NAME, "event": EVENT_NAME, "value_optional": True},
+        headers={"content-type": "application/json"},
+        json=json.dumps({"game": GAME_NAME, "event": EVENT_NAME, "value_optional": True}),
     )
     assert r.status_code == requests.codes.OK, "Couldn't register event"
 
@@ -85,7 +86,7 @@ async def start_sending_heartbeats(interval=14):
         r = requests.post(
             GS_HB_ENDPOINT,
             headers={"Content-Type": "application/json"},
-            data={"game": GAME_NAME},
+            json={"game": GAME_NAME},
         )
         assert r.status_code == requests.codes.OK, "Heartbeat failed"
         await asyncio.sleep(interval)
