@@ -1,5 +1,4 @@
 import asyncio
-import json
 import os
 
 import requests
@@ -27,7 +26,7 @@ def send_to_gs(data):
     )
     assert (
         r.status_code == requests.codes.OK
-    ), f"Request to {url} failed. Code: {r.status_code}, Response: {r.content}"
+    ), f"Request to {GS_EVENT_ENDPOINT} failed. Code: {r.status_code}, Response: {r.content}"
 
 
 def register_game():
@@ -47,7 +46,7 @@ def register_event():
     r = requests.post(
         GS_EVENT_ENDPOINT,
         headers={"Content-Type": "application/json"},
-        data={"game": GAME_NAME, "event": EVENT_NAME, "value_optional": True,},
+        data={"game": GAME_NAME, "event": EVENT_NAME, "value_optional": True},
     )
     assert r.status_code == requests.codes.OK, "Couldn't register event"
 
