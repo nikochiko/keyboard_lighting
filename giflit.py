@@ -25,7 +25,9 @@ def send_to_gs(data):
         headers={"Content-Type": "application/json"},
         data=data,
     )
-    assert r.status_code == requests.codes.OK, f"Request to {url} failed. Code: {r.status_code}, Response: {r.content}"
+    assert (
+        r.status_code == requests.codes.OK
+    ), f"Request to {url} failed. Code: {r.status_code}, Response: {r.content}"
 
 
 def register_game():
@@ -45,11 +47,7 @@ def register_event():
     r = requests.post(
         GS_EVENT_ENDPOINT,
         headers={"Content-Type": "application/json"},
-        data={
-            "game": GAME_NAME,
-            "event": EVENT_NAME,
-            "value_optional": True,
-        },
+        data={"game": GAME_NAME, "event": EVENT_NAME, "value_optional": True,},
     )
     assert r.status_code == requests.codes.OK, "Couldn't register event"
 
@@ -57,7 +55,7 @@ def register_event():
 def get_box(size, req_size=(22, 6)):
     width, height = size
     req_width, req_height = req_size
-    w_to_h = req_width/req_height
+    w_to_h = req_width / req_height
     x1, y1 = 0, 0
     new_width = w_to_h * height
 
@@ -67,7 +65,7 @@ def get_box(size, req_size=(22, 6)):
     else:
         new_height = new_width / w_to_h
 
-    x1, y1 = (width - new_width)/2, (height - new_height) / 2
+    x1, y1 = (width - new_width) / 2, (height - new_height) / 2
     x2, y2 = x1 + new_width, y1 + new_height
     return (x1, y1, x2, y2)
 
@@ -76,7 +74,11 @@ def yield_rgb_frames(im, req_size=(22, 6)):
     for frame_no in range(0, im.n_frames):
         im.seek(frame_no)
         im2 = im.resize(req_size, box=get_box(im.size, req_size))
-        yield [im2.getpixel((x, y)) for x in range(im2.width) for y in range(im2.height)]
+        yield [
+            im2.getpixel((x, y))
+            for x in range(im2.width)
+            for y in range(im2.height)
+        ]
 
 
 async def start_sending_heartbeats(interval=14):
@@ -90,7 +92,9 @@ async def start_sending_heartbeats(interval=14):
         await asyncio.sleep(interval)
 
 
-async def send_gif_frames(gif_source, frame_delay=0.1, req_size=(22, 6), forever=False):
+async def send_gif_frames(
+    gif_source, frame_delay=0.1, req_size=(22, 6), forever=False
+):
     im = Image.open(gif_source).convert("RGB")
 
     while True:
@@ -98,11 +102,7 @@ async def send_gif_frames(gif_source, frame_delay=0.1, req_size=(22, 6), forever
             data = {
                 "game": GAME_NAME,
                 "event": EVENT_NAME,
-                "data": {
-                    "frame": {
-                        "bitmap": frame
-                    }
-                }
+                "data": {"frame": {"bitmap": frame}},
             }
             send_to_gs(data)
             await asyncio.sleep(frame_delay)
@@ -114,8 +114,12 @@ async def main(heartbeat_interval=14):
     register_game()
     register_event()
 
-    heartbeats = asyncio.create_task(start_sending_heartbeats(heartbeat_interval))
-    send_gifs = asyncio.create_task(send_gif_frames(TEST_GIF_SOURCE, forever=True))
+    heartbeats = asyncio.create_task(
+        start_sending_heartbeats(heartbeat_interval)
+    )
+    send_gifs = asyncio.create_task(
+        send_gif_frames(TEST_GIF_SOURCE, forever=True)
+    )
     await heartbeats
     await send_gifs
 
